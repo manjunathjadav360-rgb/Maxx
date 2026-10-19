@@ -140,19 +140,52 @@ create policy "Users delete own video objects" on storage.objects for delete to 
 -- Production TODO: secure view counting with a database function, add rate limits/moderation,
 -- thumbnail processing, upload-size limits, abuse reporting, and private/unlisted signed URLs.
 
--- Atomically increment views without allowing browsers to set arbitrary counts.
-create or replace function public.increment_video_view(video_id uuid)
-returns void
+-- Deduplicate authenticated views: one counted view per signed-in user/video pair.
+create table if not exists public.video_views (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  video_id uuid not null references public.videos(id) on delete cascade,
+  viewed_at timestamptz not null default now(),
+  primary key (user_id, video_id)
+);
+alter table public.video_views enable row level security;
+revoke all on public.video_views from anon, authenticated;
+
+drop function if exists public.increment_video_view(uuid);
+create function public.increment_video_view(video_id uuid)
+returns boolean
 language plpgsql
 security definer
-set search_path = public
-as $$
+set search_path = ''
+as $
+declare
+  viewer_id uuid := auth.uid();
+  inserted_count integer := 0;
 begin
-  update public.videos
-  set views = views + 1
-  where id = video_id and visibility = 'public';
+  if viewer_id is null then
+    raise exception 'Sign in to record a view';
+  end if;
+
+  if not exists (
+    select 1 from public.videos v
+    where v.id = video_id and v.visibility = 'public'
+  ) then
+    return false;
+  end if;
+
+  insert into public.video_views (user_id, video_id)
+  values (viewer_id, video_id)
+  on conflict (user_id, video_id) do nothing;
+
+  get diagnostics inserted_count = row_count;
+  if inserted_count = 1 then
+    update public.videos
+    set views = views + 1
+    where id = video_id and visibility = 'public';
+    return true;
+  end if;
+  return false;
 end;
-$$;
-revoke all on function public.increment_video_view(uuid) from public;
-grant execute on function public.increment_video_view(uuid) to anon, authenticated;
+$;
+revoke all on function public.increment_video_view(uuid) from public, anon;
+grant execute on function public.increment_video_view(uuid) to authenticated;
 
