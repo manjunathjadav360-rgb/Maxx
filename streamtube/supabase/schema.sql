@@ -139,3 +139,20 @@ create policy "Users delete own video objects" on storage.objects for delete to 
 
 -- Production TODO: secure view counting with a database function, add rate limits/moderation,
 -- thumbnail processing, upload-size limits, abuse reporting, and private/unlisted signed URLs.
+
+-- Atomically increment views without allowing browsers to set arbitrary counts.
+create or replace function public.increment_video_view(video_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.videos
+  set views = views + 1
+  where id = video_id and visibility = 'public';
+end;
+$$;
+revoke all on function public.increment_video_view(uuid) from public;
+grant execute on function public.increment_video_view(uuid) to anon, authenticated;
+
