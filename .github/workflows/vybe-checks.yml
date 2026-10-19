@@ -1,0 +1,29 @@
+name: VYBE checks
+
+on:
+  push:
+    branches: [streamtube-foundation]
+    paths:
+      - "streamtube/**"
+      - ".github/workflows/vybe-checks.yml"
+  pull_request:
+    paths:
+      - "streamtube/**"
+      - ".github/workflows/vybe-checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run VYBE smoke checks
+        run: node streamtube/tests/smoke-test.mjs
