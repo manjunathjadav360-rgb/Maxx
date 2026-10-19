@@ -57,3 +57,10 @@ The frontend is static and can be hosted on GitHub Pages. Backend features still
 3. Add comments, creator profiles, and editable channel pages.
 4. Add secure view counting and moderation/reporting.
 5. Add upload progress and adaptive streaming.
+
+
+## Recent reliability fixes
+- Watch history is stored locally on the device and can be opened from the History navigation item.
+- Comments are available for database-backed uploaded videos.
+- View counts use an atomic database function instead of a client-side read/overwrite.
+- Auth and like actions surface common failures more safely.
