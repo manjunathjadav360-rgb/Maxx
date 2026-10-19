@@ -10,7 +10,7 @@ VYBE is a responsive, mobile-first video-sharing website prototype. It is added 
 - Sign-up/sign-in UI wired for Supabase Auth when configured
 - Upload flow wired for Supabase Storage and the `videos` table when configured
 - PostgreSQL schema and Row Level Security policies in `supabase/schema.sql`
-- Demo cards shown until a Supabase project is connected
+- Demo cards remain available as fallback when no database videos are present
 
 ## Stack
 
@@ -23,17 +23,14 @@ VYBE is a responsive, mobile-first video-sharing website prototype. It is added 
 
 Open `streamtube/index.html` in a browser. The demo feed works without credentials. Authentication, persistent likes/subscriptions, database-backed videos, and uploads require Supabase.
 
-## Connect Supabase
+## Supabase connection
 
-1. Create a Supabase project.
-2. Open **SQL Editor** and run all of `streamtube/supabase/schema.sql`.
-3. In **Storage**, create a bucket named `videos`. For this starter it is configured as public; do not upload private or sensitive videos.
-4. Copy the Project URL and anon/public key from **Project Settings → API**.
-5. In `streamtube/index.html`, replace:
-   - `YOUR_SUPABASE_PROJECT_URL`
-   - `YOUR_SUPABASE_ANON_KEY`
-6. Enable email/password authentication in Supabase Auth.
-7. Test sign-up, sign-in, video upload, likes, and subscriptions.
+- Project: `VYBE` (`wxssshmtatilyjktxmji`)
+- Region: Mumbai (`ap-south-1`)
+- Project URL is configured in `streamtube/index.html` using the public publishable key.
+- The database schema has been applied and verified: `profiles`, `videos`, `likes`, `comments`, and `subscriptions`, all with Row Level Security enabled.
+- A public Storage bucket named `videos` has been created. Do not upload private or sensitive videos to this bucket.
+- Next: verify email/password settings, then test sign-up, sign-in, video upload, likes, subscriptions, and comments.
 
 **Security:** Only use the Supabase anon/publishable key in browser code. Never put a service-role key, database password, or other secret in this repository. RLS is enabled in the schema, but policies and upload settings must be reviewed before public launch.
 
@@ -52,10 +49,10 @@ The frontend is static and can be hosted on GitHub Pages. Backend features still
 
 ## Suggested next milestones
 
-1. Connect Supabase and test account creation.
-2. Replace demo cards with real uploaded videos.
-3. Add comments, creator profiles, and editable channel pages.
-4. Add secure view counting and moderation/reporting.
+1. **Completed:** Create the Supabase project, apply the schema, create the video bucket, and configure the frontend connection.
+2. Test account creation and sign-in end-to-end.
+3. Test uploads, likes, subscriptions, and comments using real accounts/videos.
+4. Add stronger view-count abuse protection and moderation/reporting.
 5. Add upload progress and adaptive streaming.
 
 
