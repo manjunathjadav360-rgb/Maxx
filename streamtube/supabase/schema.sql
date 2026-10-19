@@ -149,6 +149,13 @@ create table if not exists public.video_views (
 );
 alter table public.video_views enable row level security;
 revoke all on public.video_views from anon, authenticated;
+drop policy if exists "No direct access to view events" on public.video_views;
+create policy "No direct access to view events"
+on public.video_views
+for all
+to anon, authenticated
+using (false)
+with check (false);
 
 drop function if exists public.increment_video_view(uuid);
 create function public.increment_video_view(video_id uuid)
