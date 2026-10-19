@@ -30,7 +30,7 @@ Open `streamtube/index.html` in a browser. The demo feed works without credentia
 - Project URL is configured in `streamtube/index.html` using the public publishable key.
 - The database schema has been applied and verified: `profiles`, `videos`, `likes`, `comments`, and `subscriptions`, all with Row Level Security enabled.
 - A public Storage bucket named `videos` has been created. Do not upload private or sensitive videos to this bucket.
-- Next: verify email/password settings, then test sign-up, sign-in, video upload, likes, subscriptions, and comments.
+- Automated Node.js smoke checks now run through GitHub Actions on the development branch and pull requests. Next: verify email/password settings, then test sign-up, sign-in, video upload, likes, subscriptions, and comments in a real browser.
 
 **Security:** Only use the Supabase anon/publishable key in browser code. Never put a service-role key, database password, or other secret in this repository. RLS is enabled in the schema, but policies and upload settings must be reviewed before public launch.
 
@@ -42,7 +42,7 @@ The frontend is static and can be hosted on GitHub Pages. Backend features still
 
 - Demo embed links/thumbnails are sample content and must be replaced with content you own or have permission to use.
 - No short-video feed, comments UI, recommendations algorithm, creator studio, admin/moderation panel, notifications, or payment integration yet.
-- View counts need a secure server-side function; do not trust browser-side counters.
+- View counts use a hardened database function: signed-in users can count at most one view per video per account. The function is security-definer, restricted to authenticated users, and checks that the target video is public; review rate-limiting needs before public launch.
 - Add upload progress, file-size/type enforcement, video transcoding, thumbnail generation, rate limiting, reporting, copyright handling, abuse moderation, backups, monitoring, and privacy/legal pages before launch.
 - Public video storage is suitable only for public videos. Use private buckets and signed URLs for private/unlisted content.
 - For large video hosting at scale, evaluate a dedicated video platform/CDN rather than relying on basic object storage.
