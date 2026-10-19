@@ -30,13 +30,13 @@ Open `streamtube/index.html` in a browser. The demo feed works without credentia
 - Project URL is configured in `streamtube/index.html` using the public publishable key.
 - The database schema has been applied and verified: `profiles`, `videos`, `likes`, `comments`, and `subscriptions`, all with Row Level Security enabled.
 - A public Storage bucket named `videos` has been created. Do not upload private or sensitive videos to this bucket.
-- Automated Node.js smoke checks now run through GitHub Actions on the development branch and pull requests. Next: verify email/password settings, then test sign-up, sign-in, video upload, likes, subscriptions, and comments in a real browser.
+- Automated Node.js smoke checks now run through GitHub Actions on the development branch and pull requests, including a check that the deployment keeps the existing homepage and places VYBE under `/streamtube/`. Next: verify email/password settings, then test sign-up, sign-in, video upload, likes, subscriptions, and comments in a real browser.
 
 **Security:** Only use the Supabase anon/publishable key in browser code. Never put a service-role key, database password, or other secret in this repository. RLS is enabled in the schema, but policies and upload settings must be reviewed before public launch.
 
 ## Deploy
 
-The frontend is static and can be hosted on GitHub Pages. Backend features still require the separate Supabase project. The repository's existing homepage is a separate project, so publish the `streamtube/` folder through a dedicated Pages workflow or deploy it to a static host with `streamtube/` as the publish directory.
+The `.github/workflows/vybe-pages.yml` workflow stages the existing root homepage and VYBE's `index.html` into a clean Pages artifact. After this pull request is merged, enable GitHub Pages once in **Repository Settings → Pages → Build and deployment → Source → GitHub Actions**. Then the workflow publishes the existing homepage at the site root and VYBE at `/streamtube/`, without replacing the homepage. The deployment workflow runs from `main`; it does not publish this draft branch automatically. Backend features still require the separate Supabase project.
 
 ## Not production-ready yet
 
