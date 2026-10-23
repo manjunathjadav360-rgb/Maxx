@@ -12,6 +12,7 @@ const balanceSchema = fs.readFileSync('m-rewards/supabase/migrations/20261023000
 const adminPolicySchema = fs.readFileSync('m-rewards/supabase/migrations/202610230007_perkly_admin_task_review_read_policy.sql', 'utf8');
 const adminPolicyPerformanceSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230008_perkly_admin_policy_performance.sql', 'utf8');
 const partnerSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230009_perkly_partner_collaboration_intake.sql', 'utf8');
+const partnerThrottleSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230010_perkly_partner_request_throttle_hardening.sql', 'utf8');
 const checks = [
   ['document title', '<title>Perkly — Simple rewards, every day</title>'],
   ['account sign-in control', 'id="accountButton"'],
@@ -182,3 +183,7 @@ assert.ok(partnerSchema.includes("interval '15 minutes'"), 'Partner intake shoul
 assert.ok(partnerSchema.includes('function public.review_partner_request'), 'Admin request review must use a protected RPC');
 assert.ok(partnerSchema.includes("coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') <> 'admin'"), 'Request review must enforce trusted admin role server-side');
 console.log('PASS: partner collaboration schema, privacy, throttling and admin authorization checks complete');
+
+assert.ok(partnerThrottleSchema.includes('pg_advisory_xact_lock(hashtextextended(v_email, 0))'), 'Partner email cooldown must serialize concurrent submissions');
+assert.ok(partnerThrottleSchema.includes("interval '15 minutes'"), 'Partner email cooldown must reject recent repeat requests');
+console.log('PASS: concurrent collaboration-request throttling checks complete');
