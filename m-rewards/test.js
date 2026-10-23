@@ -10,6 +10,7 @@ const concurrencySchema = fs.readFileSync('m-rewards/supabase/migrations/2026102
 const catalogSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230005_perkly_seed_original_catalog.sql', 'utf8');
 const balanceSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230006_perkly_account_balance_rpc.sql', 'utf8');
 const adminPolicySchema = fs.readFileSync('m-rewards/supabase/migrations/202610230007_perkly_admin_task_review_read_policy.sql', 'utf8');
+const adminPolicyPerformanceSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230008_perkly_admin_policy_performance.sql', 'utf8');
 const checks = [
   ['document title', '<title>Perkly — Simple rewards, every day</title>'],
   ['account sign-in control', 'id="accountButton"'],
@@ -161,3 +162,7 @@ console.log('PASS: account balance RPC authorization and ledger checks complete'
 assert.ok(adminPolicySchema.includes("auth.jwt() -> 'app_metadata' ->> 'role'"), 'Admin task review read policy must check trusted app_metadata role');
 assert.ok(adminPolicySchema.includes("= 'admin'"), 'Admin task review policy must restrict access to admins');
 console.log('PASS: admin task-review read policy checks the trusted admin claim');
+
+assert.ok(adminPolicyPerformanceSchema.includes('(select auth.jwt())'), 'Admin RLS policy should wrap auth.jwt() in a scalar subquery for performance');
+assert.ok(adminPolicyPerformanceSchema.includes("= 'admin'"), 'Optimized admin RLS policy must still require the trusted admin claim');
+console.log('PASS: optimized admin task-review RLS policy checks complete');
