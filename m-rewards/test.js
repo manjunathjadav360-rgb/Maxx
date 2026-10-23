@@ -15,7 +15,7 @@ const checks = [
   ['account-backed points panel', 'id="accountBalance"'],
   ['account activity refresh control', 'id="refreshAccount"'],
   ['account activity status', 'id="accountStatus"'],
-  ['task submission only when signed in', 'data-account-task="'+t.id+'"'],
+  ['task submission control', "data-account-task=\"'+t.id+'\""],
   ['server-backed task submission RPC', "authClient.rpc('submit_task_completion'"],
   ['account points balance RPC', "authClient.rpc('get_my_points_balance'"],
   ['separate demo and account points', 'Account points and demo points are separate.'],
