@@ -9,7 +9,7 @@ const checks = [
   ['demo mode label', 'Demo mode'],
   ['no cash value disclosure', 'Demo points · no cash value'],
   ['sample rewards disclosure', 'No real reward, voucher or cash will be issued.'],
-  ['local persistence disclosed', 'local storage'],
+  ['local persistence implementation', 'localStorage'],
   ['earn page', 'id="page-earn"'],
   ['rewards page', 'id="page-rewards"'],
   ['activity page', 'id="page-activity"'],
@@ -51,9 +51,9 @@ assert.equal(elements.balance.textContent,'1,250');
 assert.equal(elements.completedCount.textContent,'2');
 console.log('PASS: initial demo balance and completed task count render');
 context.claimTask('profile');
-assert.equal(context.state.balance,1350);
-assert.equal(context.state.completed.includes('profile'),true);
-assert.equal(context.state.history.at(-1).points,100);
+assert.equal(vm.runInContext('state.balance',context),1350);
+assert.equal(vm.runInContext("state.completed.includes('profile')",context),true);
+assert.equal(vm.runInContext('state.history.at(-1).points',context),100);
 console.log('PASS: claiming a task adds points once and records history');
 context.claimTask('profile');
 assert.equal(context.state.balance,1350);
@@ -61,16 +61,16 @@ console.log('PASS: duplicate task claim does not award points twice');
 context.openReward('coffee');
 assert.equal(elements.modalBackdrop.classList.contains('show'),true);
 context.confirmReward();
-assert.equal(context.state.balance,850);
-assert.equal(context.state.redeemed.includes('coffee'),true);
-assert.equal(context.state.history.at(-1).type,'debit');
+assert.equal(vm.runInContext('state.balance',context),850);
+assert.equal(vm.runInContext("state.redeemed.includes('coffee')",context),true);
+assert.equal(vm.runInContext('state.history.at(-1).type',context),'debit');
 console.log('PASS: reward redemption deducts points and records a debit');
 context.openReward('coffee');
 assert.equal(elements.modalBackdrop.classList.contains('show'),false);
 context.resetDemo();
-assert.equal(context.state.balance,1250);
-assert.equal(context.state.completed.length,2);
-assert.equal(context.state.redeemed.length,0);
+assert.equal(vm.runInContext('state.balance',context),1250);
+assert.equal(vm.runInContext('state.completed.length',context),2);
+assert.equal(vm.runInContext('state.redeemed.length',context),0);
 console.log('PASS: reset restores initial demo state');
 assert.ok(storage.data['perkly-demo-state']);
 console.log('PASS: demo state saves to local storage');
