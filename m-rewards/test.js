@@ -56,7 +56,7 @@ assert.equal(vm.runInContext("state.completed.includes('profile')",context),true
 assert.equal(vm.runInContext('state.history.at(-1).points',context),100);
 console.log('PASS: claiming a task adds points once and records history');
 context.claimTask('profile');
-assert.equal(context.state.balance,1350);
+assert.equal(vm.runInContext('state.balance',context),1350);
 console.log('PASS: duplicate task claim does not award points twice');
 context.openReward('coffee');
 assert.equal(elements.modalBackdrop.classList.contains('show'),true);
