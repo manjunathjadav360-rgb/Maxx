@@ -7,9 +7,18 @@ const schema = fs.readFileSync('m-rewards/supabase/migrations/202610230001_perkl
 const authSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230002_auth_profile_trigger.sql', 'utf8');
 const transactionSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230003_perkly_secure_earning_redemption.sql', 'utf8');
 const concurrencySchema = fs.readFileSync('m-rewards/supabase/migrations/202610230004_perkly_serialize_redemptions.sql', 'utf8');
+const catalogSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230005_perkly_seed_original_catalog.sql', 'utf8');
+const balanceSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230006_perkly_account_balance_rpc.sql', 'utf8');
 const checks = [
   ['document title', '<title>Perkly — Simple rewards, every day</title>'],
   ['account sign-in control', 'id="accountButton"'],
+  ['account-backed points panel', 'id="accountBalance"'],
+  ['account activity refresh control', 'id="refreshAccount"'],
+  ['account activity status', 'id="accountStatus"'],
+  ['task submission only when signed in', 'data-account-task="'+t.id+'"'],
+  ['server-backed task submission RPC', "authClient.rpc('submit_task_completion'"],
+  ['account points balance RPC', "authClient.rpc('get_my_points_balance'"],
+  ['separate demo and account points', 'Account points and demo points are separate.'],
   ['account form', 'id="authForm"'],
   ['Supabase publishable key only', 'sb_publishable_'],
   ['demo points separated from account', 'Demo points and rewards remain separate'],
@@ -137,3 +146,10 @@ console.log('PASS: secure earning/redemption migration checks complete');
 
 assert.ok(concurrencySchema.includes('pg_advisory_xact_lock'), 'Per-user redemption requests must serialize to prevent concurrent overspending');
 console.log('PASS: per-user advisory lock prevents concurrent redemption overspending');
+for (const taskId of ['welcome','profile','learn','daily','feedback','community']) assert.ok(catalogSchema.includes("('"+taskId+"'"), 'Seed catalog must include task '+taskId);
+for (const rewardId of ['coffee','voucher','headphones','donate','book','movie']) assert.ok(catalogSchema.includes("('"+rewardId+"'"), 'Seed catalog must include reward '+rewardId);
+assert.ok(balanceSchema.includes('auth.uid()'), 'Account balance must require an authenticated user');
+assert.ok(balanceSchema.includes('sum(l.amount)'), 'Account balance must sum the ledger');
+assert.ok(balanceSchema.includes('to authenticated'), 'Only authenticated users should execute the balance RPC');
+console.log('PASS: original task and reward catalog seed checks complete');
+console.log('PASS: account balance RPC authorization and ledger checks complete');
