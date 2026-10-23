@@ -1,0 +1,77 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+
+const html = fs.readFileSync('m-rewards/index.html', 'utf8');
+const checks = [
+  ['document title', '<title>Perkly — Rewards that move with you</title>'],
+  ['mobile navigation', 'class="mobile-nav"'],
+  ['demo mode label', 'Demo mode'],
+  ['no cash value disclosure', 'Demo points · no cash value'],
+  ['sample rewards disclosure', 'No real reward, voucher or cash will be issued.'],
+  ['local persistence disclosed', 'local storage'],
+  ['earn page', 'id="page-earn"'],
+  ['rewards page', 'id="page-rewards"'],
+  ['activity page', 'id="page-activity"'],
+  ['reset demo', 'function resetDemo()'],
+  ['accessible modal', 'role="dialog" aria-modal="true"'],
+  ['keyboard escape', "e.key==='Escape'"],
+  ['no real money disclaimer', 'No real-money rewards are enabled'],
+];
+for (const [name, expected] of checks) {
+  assert.ok(html.includes(expected), 'Missing feature or safeguard: ' + name);
+  console.log('PASS:', name);
+}
+const match = html.match(/<script>([\s\S]*?)<\/script>/);
+assert.ok(match, 'Inline application script exists');
+new vm.Script(match[1], { filename: 'perkly-inline.js' });
+console.log('PASS: inline JavaScript parses');
+
+// Evaluate the actual app code with a minimal DOM/localStorage test double.
+class Element {
+  constructor(id='') { this.id=id; this.textContent=''; this.innerHTML=''; this.dataset={}; this.disabled=false; this.classList={items:new Set(),add(x){this.items.add(x)},remove(x){this.items.delete(x)},contains(x){return this.items.has(x)},toggle(x,on){if(on)this.items.add(x);else this.items.delete(x)}}; this.listeners={}; this.value=''; }
+  addEventListener(type,fn){(this.listeners[type] ||= []).push(fn)}
+  focus(){document.activeElement=this}
+}
+const ids=['balance','earnBalance','rewardBalance','historyBalance','completedCount','homeTasks','allTasks','recentActivity','historyList','catalog','toast','modalTitle','modalText','modalBackdrop','cancelModal','confirmModal','pageTitle'];
+const elements=Object.fromEntries(ids.map(id=>[id,new Element(id)]));
+const document={
+ activeElement:null,
+ getElementById(id){assert.ok(elements[id], 'Unexpected DOM id: '+id);return elements[id]},
+ querySelectorAll(selector){if(selector===' .page')return[];return [];},
+ querySelector(){return null},
+ addEventListener(type,fn){(this.listeners ||= {})[type]=fn},
+};
+const storage={data:{},getItem(k){return this.data[k]??null},setItem(k,v){this.data[k]=v}};
+const window={scrollTo(){}};
+const context={document,window,localStorage:storage,console,setTimeout:()=>1,clearTimeout(){},Intl,Date,JSON,Number,Array,String,Math,structuredClone};
+vm.createContext(context);
+vm.runInContext(match[1],context,{filename:'perkly-inline.js'});
+assert.equal(elements.balance.textContent,'1,250');
+assert.equal(elements.completedCount.textContent,'2');
+console.log('PASS: initial demo balance and completed task count render');
+context.claimTask('profile');
+assert.equal(context.state.balance,1350);
+assert.equal(context.state.completed.includes('profile'),true);
+assert.equal(context.state.history.at(-1).points,100);
+console.log('PASS: claiming a task adds points once and records history');
+context.claimTask('profile');
+assert.equal(context.state.balance,1350);
+console.log('PASS: duplicate task claim does not award points twice');
+context.openReward('coffee');
+assert.equal(elements.modalBackdrop.classList.contains('show'),true);
+context.confirmReward();
+assert.equal(context.state.balance,850);
+assert.equal(context.state.redeemed.includes('coffee'),true);
+assert.equal(context.state.history.at(-1).type,'debit');
+console.log('PASS: reward redemption deducts points and records a debit');
+context.openReward('coffee');
+assert.equal(elements.modalBackdrop.classList.contains('show'),false);
+context.resetDemo();
+assert.equal(context.state.balance,1250);
+assert.equal(context.state.completed.length,2);
+assert.equal(context.state.redeemed.length,0);
+console.log('PASS: reset restores initial demo state');
+assert.ok(storage.data['perkly-demo-state']);
+console.log('PASS: demo state saves to local storage');
+console.log('PASS: all '+(checks.length+7)+' prototype checks passed');
