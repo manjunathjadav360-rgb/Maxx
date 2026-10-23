@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const html = fs.readFileSync('m-rewards/index.html', 'utf8');
 const schema = fs.readFileSync('m-rewards/supabase/migrations/202610230001_perkly_core_schema.sql', 'utf8');
 const authSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230002_auth_profile_trigger.sql', 'utf8');
+const transactionSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230003_perkly_secure_earning_redemption.sql', 'utf8');
 const checks = [
   ['document title', '<title>Perkly — Simple rewards, every day</title>'],
   ['account sign-in control', 'id="accountButton"'],
@@ -114,3 +115,21 @@ for (const [name, expected] of authChecks) {
   console.log('PASS:', name);
 }
 
+
+const transactionChecks = [
+  ['task submissions require authentication', "if v_user_id is null then raise exception 'Sign in is required'"],
+  ['only active tasks can be submitted', 't.id = p_task_id and t.active = true'],
+  ['task credits require admin review', "auth.jwt() -> 'app_metadata' ->> 'role'"],
+  ['task approval locks completion row', 'for update'],
+  ['task award has an idempotent ledger key', "'task-completion:' || v_completion.id::text"],
+  ['redemption locks reward inventory', 'where id = p_reward_id and active = true for update'],
+  ['redemption checks ledger balance', 'sum(l.amount)'],
+  ['redemption debits ledger transactionally', "'redemption_debit'"],
+  ['client cannot run admin review', 'from public, anon, authenticated'],
+  ['only authenticated users can submit and redeem', 'to authenticated'],
+];
+for (const [name, expected] of transactionChecks) {
+  assert.ok(transactionSchema.toLowerCase().includes(expected.toLowerCase()), 'Missing transaction safeguard: ' + name);
+  console.log('PASS:', name);
+}
+console.log('PASS: secure earning/redemption migration checks complete');
