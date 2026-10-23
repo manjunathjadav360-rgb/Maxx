@@ -1,0 +1,30 @@
+name: Perkly prototype checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'm-rewards/**'
+      - '.github/workflows/m-rewards-checks.yml'
+  pull_request:
+    paths:
+      - 'm-rewards/**'
+      - '.github/workflows/m-rewards-checks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prototype-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pass: [1, 2]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run prototype checks (pass ${{ matrix.pass }})
+        run: node m-rewards/test.js
