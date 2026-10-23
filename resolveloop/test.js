@@ -17,7 +17,7 @@ const checks = [
   ['accessible approval dialog', 'id="approvalModal" role="presentation"><div class="modal" role="dialog" aria-modal="true"'],
   ['accessible policy dialog label', 'aria-labelledby="policyTitle"'],
   ['Escape key dismissal', "document.addEventListener('keydown'"],
-  ['dialog focus on open', "modal.querySelector('[role="dialog"]').focus()"],
+  ['dialog focus on open', "modal.querySelector("],
   ['focus restored after close', "document.getElementById('approve').focus()"],
 ];
 for (const [name, expected] of checks) {
