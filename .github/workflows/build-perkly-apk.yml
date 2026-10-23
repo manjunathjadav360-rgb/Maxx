@@ -1,0 +1,81 @@
+name: Build Perkly Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'm-rewards/**'
+      - '.github/workflows/build-perkly-apk.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure Capacitor Android wrapper
+        run: |
+          npm init -y
+          npm install --save-exact @capacitor/core@6 @capacitor/android@6
+          npm install --save-dev --save-exact @capacitor/cli@6
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.mj.perkly",
+            "appName": "Perkly",
+            "webDir": "m-rewards",
+            "bundledWebRuntime": false
+          }
+          EOF
+          npx cap add android
+          npx cap sync android
+
+      - name: Build debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Prepare APK
+        run: |
+          mkdir -p release-apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk release-apk/Perkly.apk
+          sha256sum release-apk/Perkly.apk > release-apk/SHA256SUMS.txt
+
+      - name: Upload downloadable APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Perkly-Android-APK
+          path: release-apk/*
+          retention-days: 30
+
+      - name: Publish APK download on GitHub Releases
+        uses: ncipollo/release-action@v1
+        with:
+          tag: perkly-apk
+          name: Perkly Android APK
+          body: |
+            Installable Android debug APK for the Perkly prototype.
+            This is a test build, not a production-verified rewards or payout service.
+            Download Perkly.apk, open it on your Android phone, and allow installation from your browser/files app if Android asks.
+          artifacts: release-apk/Perkly.apk,release-apk/SHA256SUMS.txt
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: true
+          token: ${{ secrets.GITHUB_TOKEN }}
