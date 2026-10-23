@@ -14,6 +14,10 @@ const checks = [
   ['explicit demo-only safeguard', /No live PayPal account is connected/],
   ['human approval safeguard', /Human approval/],
   ['known vs unverified facts', /Not verified: the reported damage/],
+  ['approval dialog has accessible semantics', /id="approvalModal"[\\s\\S]*?role="dialog" aria-modal="true"/],
+  ['policy notes dialog has accessible label', /id="policyModal"[\\s\\S]*?aria-labelledby="policyTitle"/],
+  ['Escape key closes open dialogs', /document\\.addEventListener\\('keydown',[\\s\\S]*?e\\.key==='Escape'/],
+  ['dialog receives keyboard focus when opened', /modal\\.querySelector\\('[^']*role="dialog"[^']*'\\)\\.focus\\(\\)/],
 ];
 for (const [name, pattern] of checks) {
   assert.match(html, pattern, 'Missing or broken feature: ' + name);
