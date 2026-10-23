@@ -48,7 +48,7 @@ const context={document,window,localStorage:storage,console,setTimeout:()=>1,cle
 vm.createContext(context);
 vm.runInContext(match[1],context,{filename:'perkly-inline.js'});
 assert.equal(elements.balance.textContent,'1,250');
-assert.equal(elements.completedCount.textContent,'2');
+assert.equal(String(elements.completedCount.textContent),'2');
 console.log('PASS: initial demo balance and completed task count render');
 context.claimTask('profile');
 assert.equal(vm.runInContext('state.balance',context),1350);
