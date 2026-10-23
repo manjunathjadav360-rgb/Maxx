@@ -28,6 +28,8 @@ const checks = [
   ['account points balance RPC', "authClient.rpc('get_my_points_balance'"],
   ['separate demo and account points', 'Account points and demo points are separate.'],
   ['account form', 'id="authForm"'],
+  ['Google sign-in control', 'id="googleSignIn"'],
+  ['Google OAuth provider request', "provider:'google'"],
   ['Supabase publishable key only', 'sb_publishable_'],
   ['demo points separated from account', 'Demo points and rewards remain separate'],
   ['mobile navigation', 'class="mobile-nav"'],
