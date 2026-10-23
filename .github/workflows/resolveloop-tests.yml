@@ -1,0 +1,30 @@
+name: ResolveLoop checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'resolveloop/**'
+      - '.github/workflows/resolveloop-tests.yml'
+  pull_request:
+    paths:
+      - 'resolveloop/**'
+      - '.github/workflows/resolveloop-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prototype-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pass: [1, 2]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run prototype checks (pass ${{ matrix.pass }})
+        run: node resolveloop/test.js
