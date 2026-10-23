@@ -50,7 +50,7 @@ class FakeElement {
   }
   set className(value) {
     this._className = value;
-    this.classList = new FakeClassList(String(value).split(/\\s+/).filter(Boolean));
+    this.classList = new FakeClassList(String(value).split(' ').filter(Boolean));
   }
   get className() { return this._className || [...this.classList.values].join(' '); }
   addEventListener(type, fn) { (this.listeners[type] ||= []).push(fn); }
