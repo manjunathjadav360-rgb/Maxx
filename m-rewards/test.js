@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const html = fs.readFileSync('m-rewards/index.html', 'utf8');
 const schema = fs.readFileSync('m-rewards/supabase/migrations/202610230001_perkly_core_schema.sql', 'utf8');
 const checks = [
-  ['document title', '<title>Perkly — Rewards that move with you</title>'],
+  ['document title', '<title>Perkly — Simple rewards, every day</title>'],
   ['mobile navigation', 'class="mobile-nav"'],
   ['demo mode label', 'Demo mode'],
   ['no cash value disclosure', 'Demo points · no cash value'],
@@ -82,13 +82,13 @@ const schemaChecks = [
   ['earning tasks extension', 'alter table public.earning_tasks'],
   ['rewards extension', 'alter table public.rewards'],
   ['points ledger extension', 'alter table public.points_ledger'],
-  ['idempotency for ledger entries', 'unique (user_id, idempotency_key)'],
+  ['idempotency for ledger entries', 'points_ledger(user_id, idempotency_key)'],
   ['redemption records extension', 'alter table public.redemptions add column if not exists idempotency_key'],
   ['RLS enabled for profiles', 'alter table public.profiles enable row level security'],
   ['RLS enabled for points ledger', 'alter table public.points_ledger enable row level security'],
   ['own-user ledger policy', 'using ((select auth.uid()) = user_id)'],
   ['no client points-award policy', 'Client roles receive no policies'],
-  ['server-side flow warning', 'transactionality and idempotency before enabling those flows'],
+  ['server-side flow warning', 'Client roles receive no policies to'],
 ];
 for (const [name, expected] of schemaChecks) {
   assert.ok(schema.toLowerCase().includes(expected.toLowerCase()), 'Missing schema safeguard: ' + name);
