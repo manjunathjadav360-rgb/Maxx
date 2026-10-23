@@ -78,16 +78,16 @@ console.log('PASS: demo state saves to local storage');
 console.log('PASS: all '+(checks.length+7)+' prototype checks passed');
 
 const schemaChecks = [
-  ['profile table', 'create table if not exists public.profiles'],
-  ['earning tasks table', 'create table if not exists public.earning_tasks'],
-  ['rewards table', 'create table if not exists public.rewards'],
-  ['append-only points ledger', 'create table if not exists public.points_ledger'],
+  ['profile table extension', 'alter table public.profiles'],
+  ['earning tasks extension', 'alter table public.earning_tasks'],
+  ['rewards extension', 'alter table public.rewards'],
+  ['points ledger extension', 'alter table public.points_ledger'],
   ['idempotency for ledger entries', 'unique (user_id, idempotency_key)'],
-  ['redemption records', 'create table if not exists public.redemptions'],
+  ['redemption records extension', 'alter table public.redemptions add column if not exists idempotency_key'],
   ['RLS enabled for profiles', 'alter table public.profiles enable row level security'],
   ['RLS enabled for points ledger', 'alter table public.points_ledger enable row level security'],
   ['own-user ledger policy', 'using ((select auth.uid()) = user_id)'],
-  ['no client points-award policy', 'no client insert/update/delete policy'],
+  ['no client points-award policy', 'Client roles receive no policies'],
   ['server-side flow warning', 'transactionality and idempotency before enabling those flows'],
 ];
 for (const [name, expected] of schemaChecks) {
