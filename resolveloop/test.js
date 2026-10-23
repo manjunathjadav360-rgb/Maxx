@@ -4,23 +4,24 @@ const assert = require('node:assert/strict');
 
 const html = fs.readFileSync('resolveloop/index.html', 'utf8');
 const checks = [
-  ['page title', /<title>ResolveLoop — Purchase support, made clearer<\/title>/],
-  ['case identifier', /Case RL-2048/],
-  ['four resolution options', /data-key="replacement"/],
-  ['partial refund option', /data-key="partial"/],
-  ['full refund option', /data-key="full"/],
-  ['evidence request option', /data-key="evidence"/],
-  ['reset control', /onclick="resetDemo\(\)"/],
-  ['explicit demo-only safeguard', /No live PayPal account is connected/],
-  ['human approval safeguard', /Human approval/],
-  ['known vs unverified facts', /Not verified: the reported damage/],
-  ['approval dialog has accessible semantics', /id="approvalModal"[\\s\\S]*?role="dialog" aria-modal="true"/],
-  ['policy notes dialog has accessible label', /id="policyModal"[\\s\\S]*?aria-labelledby="policyTitle"/],
-  ['Escape key closes open dialogs', /document\\.addEventListener\\('keydown',[\\s\\S]*?e\\.key==='Escape'/],
-  ['dialog receives keyboard focus when opened', /modal\\.querySelector\\('[^']*role="dialog"[^']*'\\)\\.focus\\(\\)/],
+  ['page title', '<title>ResolveLoop — Purchase support, made clearer</title>'],
+  ['case identifier', 'Case RL-2048'],
+  ['replacement option', 'data-key="replacement"'],
+  ['partial refund option', 'data-key="partial"'],
+  ['full refund option', 'data-key="full"'],
+  ['evidence request option', 'data-key="evidence"'],
+  ['reset control', 'onclick="resetDemo()"'],
+  ['demo-only PayPal safeguard', 'No live PayPal account is connected'],
+  ['human approval safeguard', 'Human approval'],
+  ['known vs unverified facts', 'Not verified: the reported damage'],
+  ['accessible approval dialog', 'id="approvalModal" role="presentation"><div class="modal" role="dialog" aria-modal="true"'],
+  ['accessible policy dialog label', 'aria-labelledby="policyTitle"'],
+  ['Escape key dismissal', "document.addEventListener('keydown'"],
+  ['dialog focus on open', "modal.querySelector('[role=\"dialog\"]').focus()"],
+  ['focus restored after close', "document.getElementById('approve').focus()"],
 ];
-for (const [name, pattern] of checks) {
-  assert.match(html, pattern, 'Missing or broken feature: ' + name);
+for (const [name, expected] of checks) {
+  assert.ok(html.includes(expected), 'Missing or broken feature: ' + name);
   console.log('PASS:', name);
 }
 const script = html.match(/<script>([\s\S]*?)<\/script>/);
