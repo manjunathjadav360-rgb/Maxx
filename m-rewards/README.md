@@ -19,11 +19,17 @@ Open `index.html` in a modern browser, or serve this folder with any static web 
 - No account authentication, server, database, ad network, survey provider, payment service, or gift-card partner is connected.
 - Do not use it to collect real user data or promise cash/rewards.
 
+## Phase 2 preparation
+- A Supabase/Postgres migration draft is available at `supabase/migrations/202610230001_perkly_core_schema.sql`.
+- It defines profiles, earning tasks, rewards, a points ledger, task completions and redemptions.
+- Row-level security is enabled on all six tables. Client roles can read only their own account records and active catalogues; clients cannot directly award points or write the ledger.
+- The migration has **not yet been applied** to a database. Server-side transactional task-completion and redemption flows, authentication UI, admin authorization, and production security review are still required.
+
 ## Planned phases
 1. Test and refine the prototype.
-2. Add a server-backed database and secure authentication, with server-controlled points ledger and audit trail.
-3. Add an admin review workflow, abuse controls, terms/privacy information, and legitimate reward-provider integration.
-4. Conduct security and user testing before a public launch.
+2. Create a dedicated backend project, review and apply the schema, then add authentication.
+3. Implement secure server-side earning/redemption flows, admin review, abuse controls, and privacy/terms information.
+4. Investigate legitimate reward-provider integrations and complete security/user testing before public launch.
 
 ## Tests
 From the repository root:
