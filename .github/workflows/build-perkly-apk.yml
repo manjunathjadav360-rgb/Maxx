@@ -52,29 +52,31 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Prepare APK
+      - name: Prepare ZIP download
         run: |
-          mkdir -p release-apk
-          cp android/app/build/outputs/apk/debug/app-debug.apk release-apk/Perkly.apk
-          sha256sum release-apk/Perkly.apk > release-apk/SHA256SUMS.txt
+          mkdir -p release-package
+          cp android/app/build/outputs/apk/debug/app-debug.apk release-package/Perkly.apk
+          cd release-package
+          sha256sum Perkly.apk > SHA256SUMS.txt
+          zip -9 Perkly-Android.zip Perkly.apk SHA256SUMS.txt
+          sha256sum Perkly-Android.zip > ZIP-SHA256SUMS.txt
 
-      - name: Upload downloadable APK artifact
+      - name: Upload downloadable ZIP artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Perkly-Android-APK
-          path: release-apk/*
+          name: Perkly-Android-ZIP
+          path: release-package/Perkly-Android.zip
           retention-days: 30
 
-      - name: Publish APK download on GitHub Releases
+      - name: Publish ZIP download on GitHub Releases
         uses: ncipollo/release-action@v1
         with:
           tag: perkly-apk
-          name: Perkly Android APK
+          name: Perkly Android APK (ZIP download)
           body: |
-            Installable Android debug APK for the Perkly prototype.
-            This is a test build, not a production-verified rewards or payout service.
-            Download Perkly.apk, open it on your Android phone, and allow installation from your browser/files app if Android asks.
-          artifacts: release-apk/Perkly.apk,release-apk/SHA256SUMS.txt
+            Download Perkly-Android.zip, extract it, then open Perkly.apk on your Android phone.
+            This is a test/debug build, not a production-verified rewards or payout service.
+          artifacts: release-package/Perkly-Android.zip,release-package/ZIP-SHA256SUMS.txt
           allowUpdates: true
           replacesArtifacts: true
           makeLatest: true
