@@ -11,6 +11,7 @@ const catalogSchema = fs.readFileSync('m-rewards/supabase/migrations/20261023000
 const balanceSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230006_perkly_account_balance_rpc.sql', 'utf8');
 const adminPolicySchema = fs.readFileSync('m-rewards/supabase/migrations/202610230007_perkly_admin_task_review_read_policy.sql', 'utf8');
 const adminPolicyPerformanceSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230008_perkly_admin_policy_performance.sql', 'utf8');
+const partnerSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230009_perkly_partner_collaboration_intake.sql', 'utf8');
 const checks = [
   ['document title', '<title>Perkly — Simple rewards, every day</title>'],
   ['account sign-in control', 'id="accountButton"'],
@@ -40,6 +41,12 @@ const checks = [
   ['accessible modal', 'role="dialog" aria-modal="true"'],
   ['keyboard escape', "e.key==='Escape'"],
   ['no real money disclaimer', 'No real-money rewards are enabled'],
+  ['company partnership page', 'id="page-partners"'],
+  ['company partnership form', 'id="partnerRequestForm"'],
+  ['secure collaboration RPC', "authClient.rpc('submit_partner_request'"],
+  ['admin collaboration queue', 'id="adminPartnerPanel"'],
+  ['admin collaboration status RPC', "authClient.rpc('review_partner_request'"],
+  ['partnership is not guaranteed disclaimer', 'does not create a contract or confirm a partnership'],
 ];
 for (const [name, expected] of checks) {
   assert.ok(html.includes(expected), 'Missing feature or safeguard: ' + name);
@@ -166,3 +173,12 @@ console.log('PASS: admin task-review read policy checks the trusted admin claim'
 assert.ok(adminPolicyPerformanceSchema.includes('(select auth.jwt())'), 'Admin RLS policy should wrap auth.jwt() in a scalar subquery for performance');
 assert.ok(adminPolicyPerformanceSchema.includes("= 'admin'"), 'Optimized admin RLS policy must still require the trusted admin claim');
 console.log('PASS: optimized admin task-review RLS policy checks complete');
+
+assert.ok(partnerSchema.includes('create table if not exists public.partner_requests'), 'Partner requests need a dedicated table');
+assert.ok(partnerSchema.includes('enable row level security'), 'Partner requests table must enable RLS');
+assert.ok(partnerSchema.includes('revoke all on public.partner_requests from public, anon, authenticated'), 'Direct public table access must be revoked');
+assert.ok(partnerSchema.includes('function public.submit_partner_request'), 'Partner intake must use a validation RPC');
+assert.ok(partnerSchema.includes("interval '15 minutes'"), 'Partner intake should throttle repeated submissions from the same email');
+assert.ok(partnerSchema.includes('function public.review_partner_request'), 'Admin request review must use a protected RPC');
+assert.ok(partnerSchema.includes("coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '') <> 'admin'"), 'Request review must enforce trusted admin role server-side');
+console.log('PASS: partner collaboration schema, privacy, throttling and admin authorization checks complete');
