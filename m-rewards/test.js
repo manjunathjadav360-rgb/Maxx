@@ -4,8 +4,13 @@ const assert = require('node:assert/strict');
 
 const html = fs.readFileSync('m-rewards/index.html', 'utf8');
 const schema = fs.readFileSync('m-rewards/supabase/migrations/202610230001_perkly_core_schema.sql', 'utf8');
+const authSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230002_auth_profile_trigger.sql', 'utf8');
 const checks = [
   ['document title', '<title>Perkly — Simple rewards, every day</title>'],
+  ['account sign-in control', 'id="accountButton"'],
+  ['account form', 'id="authForm"'],
+  ['Supabase publishable key only', 'sb_publishable_'],
+  ['demo points separated from account', 'Demo points and rewards remain separate'],
   ['mobile navigation', 'class="mobile-nav"'],
   ['demo mode label', 'Demo mode'],
   ['no cash value disclosure', 'Demo points · no cash value'],
@@ -34,7 +39,7 @@ class Element {
   addEventListener(type,fn){(this.listeners[type] ||= []).push(fn)}
   focus(){document.activeElement=this}
 }
-const ids=['balance','earnBalance','rewardBalance','historyBalance','completedCount','homeTasks','allTasks','recentActivity','historyList','catalog','toast','modalTitle','modalText','modalBackdrop','cancelModal','confirmModal','pageTitle'];
+const ids=['accountButton','authMessage','authClose','authModeToggle','authSignOut','authSubmit','authForm','authBackdrop','authTitle','displayNameLabel','authEmail','authPassword','authDisplayName','balance','earnBalance','rewardBalance','historyBalance','completedCount','homeTasks','allTasks','recentActivity','historyList','catalog','toast','modalTitle','modalText','modalBackdrop','cancelModal','confirmModal','pageTitle'];
 const elements=Object.fromEntries(ids.map(id=>[id,new Element(id)]));
 const document={
  activeElement:null,
@@ -98,3 +103,14 @@ for (const [name, expected] of schemaChecks) {
 assert.equal((schema.match(/enable row level security/gi) || []).length, 6, 'RLS must be enabled on all six tables');
 console.log('PASS: RLS enabled on all six application tables');
 console.log('PASS: schema checks complete');
+const authChecks = [
+  ['new user profile trigger', 'create trigger on_auth_user_created'],
+  ['fixed trigger search path', "set search_path = ''"],
+  ['profile name length limited', 'left(trim(coalesce(new.raw_user_meta_data ->> \'display_name\', \'\')), 60)'],
+  ['trigger function not executable by client roles', 'revoke all on function public.handle_new_user() from public, anon, authenticated'],
+];
+for (const [name, expected] of authChecks) {
+  assert.ok(authSchema.toLowerCase().includes(expected.toLowerCase()), 'Missing auth safeguard: ' + name);
+  console.log('PASS:', name);
+}
+
