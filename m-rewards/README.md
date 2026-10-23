@@ -15,6 +15,7 @@ Open `index.html` in a modern browser, or serve this folder with a static web se
 - Database RPCs now accept authenticated task submissions for review, award points only after an authorized admin approves a task, and process redemption requests transactionally. Per-user redemption locking prevents concurrent overspending; idempotency keys protect repeated requests.
 - The activity page displays account-backed points and recent ledger entries separately from local demo points. Signed-in users can submit a sample task for review; a role-gated admin review panel can approve/reject pending submissions. Approval is enforced by the database role claim as well as the UI.
 - Redemption requests are not actual vouchers, cash payouts or fulfilled rewards.
+- A public company/survey-network collaboration form records enquiries in a private database table through a validated RPC; only trusted admin-role accounts can read and update the queue. The form does not send emails, create agreements, or confirm partnerships. Same-email submissions are throttled, but CAPTCHA/stronger abuse controls are required before broad public promotion.
 - Admin approval currently requires a trusted Supabase Auth `app_metadata.role = admin` claim. The restricted review panel is implemented in the app, but an administrator account still must be provisioned through a trusted server-side or Supabase administrative path; never expose a service-role key in browser code.
 
 ## Originality and third-party rights
@@ -23,9 +24,9 @@ Open `index.html` in a modern browser, or serve this folder with a static web se
 - Before public launch, check the Perkly name and logo for conflicts and obtain an appropriate legal review. No automated check can guarantee that a product is free from every possible copyright or trademark claim.
 
 ## Before public launch
-1. Provision a real administrator claim securely and test admin review with separate admin and non-admin accounts.
+1. Provision a real administrator claim securely and test task and partner-request review with separate admin and non-admin accounts.
 2. Complete real-browser sign-up, sign-in, session refresh, task submission, approval/rejection and ledger verification tests.
-3. Add abuse controls, auditability, and cancellation/reversal rules before any live reward fulfillment.
+3. Add CAPTCHA/rate-limiting protections, abuse controls, auditability, and cancellation/reversal rules before public promotion or any live reward fulfillment.
 4. Publish privacy, terms, reward eligibility and redemption rules.
 5. Choose legitimate reward providers only after reviewing their contracts, pricing and permissions; implement real fulfillment and refund/reversal handling before enabling redemptions.
 6. Test on real phones and desktops, review security advisories and confirm costs before public launch.
