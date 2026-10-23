@@ -48,6 +48,11 @@ class FakeElement {
     this.style = {}; this.dataset = {}; this.classList = new FakeClassList();
     this.listeners = {}; this.focused = false; this.children = {};
   }
+  set className(value) {
+    this._className = value;
+    this.classList = new FakeClassList(String(value).split(/\\s+/).filter(Boolean));
+  }
+  get className() { return this._className || [...this.classList.values].join(' '); }
   addEventListener(type, fn) { (this.listeners[type] ||= []).push(fn); }
   focus() { this.focused = true; }
   querySelector(selector) { return this.children[selector] || null; }
