@@ -9,12 +9,17 @@ const transactionSchema = fs.readFileSync('m-rewards/supabase/migrations/2026102
 const concurrencySchema = fs.readFileSync('m-rewards/supabase/migrations/202610230004_perkly_serialize_redemptions.sql', 'utf8');
 const catalogSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230005_perkly_seed_original_catalog.sql', 'utf8');
 const balanceSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230006_perkly_account_balance_rpc.sql', 'utf8');
+const adminPolicySchema = fs.readFileSync('m-rewards/supabase/migrations/202610230007_perkly_admin_task_review_read_policy.sql', 'utf8');
 const checks = [
   ['document title', '<title>Perkly — Simple rewards, every day</title>'],
   ['account sign-in control', 'id="accountButton"'],
   ['account-backed points panel', 'id="accountBalance"'],
   ['account activity refresh control', 'id="refreshAccount"'],
   ['account activity status', 'id="accountStatus"'],
+  ['admin review panel hidden by default', 'id="adminReviewPanel" hidden'],
+  ['admin role claim gate', "currentUser.app_metadata?.role==='admin'"],
+  ['admin review uses server RPC', "authClient.rpc('review_task_completion'"],
+  ['admin review queue loads pending submissions', "item.status==='pending'"],
   ['task submission control', "data-account-task=\"'+t.id+'\""],
   ['server-backed task submission RPC', "authClient.rpc('submit_task_completion'"],
   ['account points balance RPC', "authClient.rpc('get_my_points_balance'"],
@@ -153,3 +158,6 @@ assert.ok(balanceSchema.includes('sum(l.amount)'), 'Account balance must sum the
 assert.ok(balanceSchema.includes('to authenticated'), 'Only authenticated users should execute the balance RPC');
 console.log('PASS: original task and reward catalog seed checks complete');
 console.log('PASS: account balance RPC authorization and ledger checks complete');
+assert.ok(adminPolicySchema.includes("auth.jwt() -> 'app_metadata' ->> 'role'"), 'Admin task review read policy must check trusted app_metadata role');
+assert.ok(adminPolicySchema.includes("= 'admin'"), 'Admin task review policy must restrict access to admins');
+console.log('PASS: admin task-review read policy checks the trusted admin claim');
