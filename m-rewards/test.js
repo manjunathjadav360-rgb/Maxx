@@ -3,6 +3,7 @@ const vm = require('node:vm');
 const assert = require('node:assert/strict');
 
 const html = fs.readFileSync('m-rewards/index.html', 'utf8');
+const schema = fs.readFileSync('m-rewards/supabase/migrations/202610230001_perkly_core_schema.sql', 'utf8');
 const checks = [
   ['document title', '<title>Perkly — Rewards that move with you</title>'],
   ['mobile navigation', 'class="mobile-nav"'],
@@ -75,3 +76,24 @@ console.log('PASS: reset restores initial demo state');
 assert.ok(storage.data['perkly-demo-state']);
 console.log('PASS: demo state saves to local storage');
 console.log('PASS: all '+(checks.length+7)+' prototype checks passed');
+
+const schemaChecks = [
+  ['profile table', 'create table if not exists public.profiles'],
+  ['earning tasks table', 'create table if not exists public.earning_tasks'],
+  ['rewards table', 'create table if not exists public.rewards'],
+  ['append-only points ledger', 'create table if not exists public.points_ledger'],
+  ['idempotency for ledger entries', 'unique (user_id, idempotency_key)'],
+  ['redemption records', 'create table if not exists public.redemptions'],
+  ['RLS enabled for profiles', 'alter table public.profiles enable row level security'],
+  ['RLS enabled for points ledger', 'alter table public.points_ledger enable row level security'],
+  ['own-user ledger policy', 'using ((select auth.uid()) = user_id)'],
+  ['no client points-award policy', 'no client insert/update/delete policy'],
+  ['server-side flow warning', 'transactionality and idempotency before enabling those flows'],
+];
+for (const [name, expected] of schemaChecks) {
+  assert.ok(schema.toLowerCase().includes(expected.toLowerCase()), 'Missing schema safeguard: ' + name);
+  console.log('PASS:', name);
+}
+assert.equal((schema.match(/enable row level security/gi) || []).length, 6, 'RLS must be enabled on all six tables');
+console.log('PASS: RLS enabled on all six application tables');
+console.log('PASS: schema checks complete');
