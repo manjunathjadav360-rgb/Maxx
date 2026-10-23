@@ -44,6 +44,8 @@ create table if not exists public.task_completions (
   unique (user_id, idempotency_key)
 );
 
+create index if not exists task_completions_task_id_idx on public.task_completions(task_id);
+
 alter table public.redemptions add column if not exists idempotency_key text;
 update public.redemptions set idempotency_key = 'legacy-' || id::text where idempotency_key is null;
 alter table public.redemptions alter column idempotency_key set not null;
