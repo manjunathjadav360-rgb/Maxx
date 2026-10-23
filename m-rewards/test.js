@@ -83,6 +83,7 @@ const schemaChecks = [
   ['rewards extension', 'alter table public.rewards'],
   ['points ledger extension', 'alter table public.points_ledger'],
   ['idempotency for ledger entries', 'points_ledger(user_id, idempotency_key)'],
+  ['task completion foreign-key index', 'task_completions_task_id_idx'],
   ['redemption records extension', 'alter table public.redemptions add column if not exists idempotency_key'],
   ['RLS enabled for profiles', 'alter table public.profiles enable row level security'],
   ['RLS enabled for points ledger', 'alter table public.points_ledger enable row level security'],
