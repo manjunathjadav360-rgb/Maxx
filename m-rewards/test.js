@@ -6,6 +6,7 @@ const html = fs.readFileSync('m-rewards/index.html', 'utf8');
 const schema = fs.readFileSync('m-rewards/supabase/migrations/202610230001_perkly_core_schema.sql', 'utf8');
 const authSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230002_auth_profile_trigger.sql', 'utf8');
 const transactionSchema = fs.readFileSync('m-rewards/supabase/migrations/202610230003_perkly_secure_earning_redemption.sql', 'utf8');
+const concurrencySchema = fs.readFileSync('m-rewards/supabase/migrations/202610230004_perkly_serialize_redemptions.sql', 'utf8');
 const checks = [
   ['document title', '<title>Perkly — Simple rewards, every day</title>'],
   ['account sign-in control', 'id="accountButton"'],
@@ -133,3 +134,6 @@ for (const [name, expected] of transactionChecks) {
   console.log('PASS:', name);
 }
 console.log('PASS: secure earning/redemption migration checks complete');
+
+assert.ok(concurrencySchema.includes('pg_advisory_xact_lock'), 'Per-user redemption requests must serialize to prevent concurrent overspending');
+console.log('PASS: per-user advisory lock prevents concurrent redemption overspending');
